@@ -14,7 +14,6 @@
 
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar */
         .sidebar { width: 260px; background: var(--primary); color: white; display: flex; flex-direction: column; padding: 15px; z-index: 10; }
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 10px; }
         .uf-list { overflow-y: auto; flex: 1; }
@@ -22,28 +21,25 @@
         .uf-item:hover { background: #1e293b; }
         .uf-item.active { background: var(--accent); color: white; font-weight: bold; }
 
-        /* Main Content */
         .main { flex: 1; overflow-y: auto; padding: 25px; position: relative; }
-        .container { max-width: 1200px; margin: 0 auto; width: 100%; }
-        
-        /* Views */
         .view-pane { display: none; }
         .view-pane.active { display: block; }
 
-        /* Buttons */
         .btn-sm { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.75rem; transition: 0.2s; display: inline-flex; align-items: center; gap: 6px; }
         .btn-primary { background: var(--accent); color: white; }
         .btn-nav { background: #334155; color: white; width: 100%; margin-bottom: 8px; justify-content: flex-start; }
         .btn-nav:hover { background: #475569; }
         .btn-nav.active { border-left: 4px solid var(--accent); background: #1e293b; }
 
-        /* Tables & Cards */
+        /* Estilo da área de Banco de Dados Local na Sidebar */
+        .local-db-box { margin-top: auto; padding: 15px 0; border-top: 1px solid #1e293b; }
+        .btn-sync { background: #0ea5e9; color: white; width: 100%; margin-top: 5px; }
+
         .card { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 12px; background: #f8fafc; font-size: 0.7rem; color: #64748b; border-bottom: 2px solid var(--border); }
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
 
-        /* Chamados */
         .risk-tag { padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 0.65rem; text-transform: uppercase; }
         .risk-baixo { background: var(--risk-baixo); color: #166534; }
         .risk-medio { background: var(--risk-medio); color: #854d0e; }
@@ -72,43 +68,34 @@
 
     <div style="font-size: 0.65rem; color: #64748b; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;">Estados Selecionados</div>
     <div class="uf-list" id="sidebarList"></div>
+
+    <div class="local-db-box">
+        <div style="font-size: 0.6rem; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Banco de Dados Local</div>
+        <button class="btn-sm btn-sync" onclick="exportToFolder()">💾 Salvar na Pasta</button>
+        <button class="btn-sm btn-nav" onclick="document.getElementById('fileInput').click()" style="margin-top:5px;">📂 Carregar da Pasta</button>
+        <input type="file" id="fileInput" style="display:none" onchange="importFromFolder(event)" accept=".json">
+    </div>
 </div>
 
 <div class="main">
     
     <div id="viewTickets" class="view-pane">
         <h1 style="margin:0 0 15px 0;">Central de Chamados / Demandas</h1>
-        
         <div class="card" style="background: #f8fafc;">
             <h4 style="margin-top:0">Abrir Novo Chamado</h4>
             <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px;">
                 <input type="text" id="tSubject" placeholder="Assunto / Demanda">
                 <div style="display:flex; flex-direction:column"><small>Data Entrada</small><input type="date" id="tDate"></div>
                 <div style="display:flex; flex-direction:column"><small>Risco</small>
-                    <select id="tRisk">
-                        <option value="Baixo">Baixo</option>
-                        <option value="Medio">Médio</option>
-                        <option value="Alto">Alto</option>
-                    </select>
+                    <select id="tRisk"><option value="Baixo">Baixo</option><option value="Medio">Médio</option><option value="Alto">Alto</option></select>
                 </div>
                 <button class="btn-sm btn-primary" onclick="addTicket()" style="align-self: flex-end;">Abrir Chamado</button>
             </div>
         </div>
-
         <div class="card">
             <h3>Fila de Atendimento</h3>
             <table>
-                <thead>
-                    <tr>
-                        <th width="80">ID</th>
-                        <th>Assunto</th>
-                        <th>Entrada</th>
-                        <th>Risco</th>
-                        <th>Status</th>
-                        <th>Data Baixa</th>
-                        <th width="100">Ações</th>
-                    </tr>
-                </thead>
+                <thead><tr><th width="80">ID</th><th>Assunto</th><th>Entrada</th><th>Risco</th><th>Status</th><th>Data Baixa</th><th width="100">Ações</th></tr></thead>
                 <tbody id="ticketBody"></tbody>
             </table>
         </div>
@@ -117,24 +104,12 @@
     <div id="viewGlobal" class="view-pane">
         <h1 style="margin:0 0 15px 0;">Monitor Nacional</h1>
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
-            <div style="background:var(--primary); color:white; padding:15px; border-radius:10px;">
-                <small>TOTAL FISCALIZAÇÕES</small><div id="gTotal" style="font-size:1.5rem; font-weight:bold">0</div>
-            </div>
-            <div style="background:var(--warning); color:white; padding:15px; border-radius:10px;">
-                <small>PROCESSOS EM ANDAMENTO</small><div id="gPending" style="font-size:1.5rem; font-weight:bold">0</div>
-            </div>
-            <div style="background:var(--danger); color:white; padding:15px; border-radius:10px;">
-                <small>VENCIDOS / ATENÇÃO</small><div id="gExpired" style="font-size:1.5rem; font-weight:bold">0</div>
-            </div>
-            <div style="background:#475569; color:white; padding:15px; border-radius:10px;">
-                <small>TOTAL CHAMADOS</small><div id="gTicketsTotal" style="font-size:1.5rem; font-weight:bold">0</div>
-            </div>
-            <div style="background:#6366f1; color:white; padding:15px; border-radius:10px;">
-                <small>CHAMADOS PENDENTES</small><div id="gTicketsOpen" style="font-size:1.5rem; font-weight:bold">0</div>
-            </div>
-            <div style="background:var(--success); color:white; padding:15px; border-radius:10px;">
-                <small>VALOR PAGO (ANO)</small><div id="gFinance" style="font-size:1.2rem; font-weight:bold">R$ 0,00</div>
-            </div>
+            <div style="background:var(--primary); color:white; padding:15px; border-radius:10px;"><small>TOTAL FISCALIZAÇÕES</small><div id="gTotal" style="font-size:1.5rem; font-weight:bold">0</div></div>
+            <div style="background:var(--warning); color:white; padding:15px; border-radius:10px;"><small>PROCESSOS EM ANDAMENTO</small><div id="gPending" style="font-size:1.5rem; font-weight:bold">0</div></div>
+            <div style="background:var(--danger); color:white; padding:15px; border-radius:10px;"><small>VENCIDOS / ATENÇÃO</small><div id="gExpired" style="font-size:1.5rem; font-weight:bold">0</div></div>
+            <div style="background:#475569; color:white; padding:15px; border-radius:10px;"><small>TOTAL CHAMADOS</small><div id="gTicketsTotal" style="font-size:1.5rem; font-weight:bold">0</div></div>
+            <div style="background:#6366f1; color:white; padding:15px; border-radius:10px;"><small>CHAMADOS PENDENTES</small><div id="gTicketsOpen" style="font-size:1.5rem; font-weight:bold">0</div></div>
+            <div style="background:var(--success); color:white; padding:15px; border-radius:10px;"><small>VALOR PAGO (ANO)</small><div id="gFinance" style="font-size:1.2rem; font-weight:bold">R$ 0,00</div></div>
         </div>
         <div class="card">
             <h3>Status Consolidado por Estado</h3>
@@ -187,22 +162,18 @@
         </div>
         <div class="card" style="background: #f8fafc;">
             <h4 style="margin-top:0">Novo Processo / Fiscalização</h4>
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px;">
-                <input type="text" id="fName" placeholder="Nome do Processo / Notificação">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; gap: 10px;">
+                <input type="text" id="fName" placeholder="Nome do Processo">
                 <div style="display:flex; flex-direction:column"><small>Entrada</small><input type="date" id="fIn"></div>
-                <div style="display:flex; flex-direction:column"><small>Prazo Original</small><input type="date" id="fLimit"></div>
-                <div style="display:flex; flex-direction:column"><small>Status</small>
-                    <select id="fStatus">
-                        <option value="Em Andamento">Em Andamento</option>
-                        <option value="Concluído">Concluído</option>
-                    </select>
-                </div>
+                <div style="display:flex; flex-direction:column"><small>Prazo</small><input type="date" id="fLimit"></div>
+                <div style="display:flex; flex-direction:column"><small>Status</small><select id="fStatus"><option value="Em Andamento">Em Andamento</option><option value="Concluído">Concluído</option></select></div>
+                <div style="display:flex; flex-direction:column"><small>Link Docs</small><input type="url" id="fLink" placeholder="OneDrive Link"></div>
                 <button class="btn-sm btn-primary" onclick="addFiscalizacao()" style="align-self: flex-end;">Lançar</button>
             </div>
         </div>
         <div class="card">
             <table id="fiscTable">
-                <thead><tr><th>Processo</th><th>Entrada</th><th>Prazo Original</th><th>Prorrogação</th><th>Status</th><th>Ações</th></tr></thead>
+                <thead><tr><th>Processo</th><th>Entrada</th><th>Prazo</th><th>Status</th><th>Docs</th><th>Ações</th></tr></thead>
                 <tbody id="fiscBody"></tbody>
             </table>
         </div>
@@ -219,11 +190,7 @@
         <label>Considera Pré-pago?</label><select id="cfgPrePago"><option value="Não">Não</option><option value="Sim">Sim</option></select>
         <hr>
         <label>Dia Vencimento ICMS</label><input type="number" id="cfgDiaVenc" placeholder="Ex: 10">
-        <label>Regra Feriado/Fim de Semana</label>
-        <select id="cfgRegraVenc">
-            <option value="Antecipa">Antecipa</option>
-            <option value="Posterga">Posterga</option>
-        </select>
+        <label>Regra Feriado/Fim de Semana</label><select id="cfgRegraVenc"><option value="Antecipa">Antecipa</option><option value="Posterga">Posterga</option></select>
         <div style="margin-top:20px; display:flex; gap:10px;">
             <button class="btn-sm btn-primary" style="flex:1" onclick="saveUFConfig()">Salvar</button>
             <button class="btn-sm" style="background:#e2e8f0" onclick="closeModal('modalUF')">Fechar</button>
@@ -234,43 +201,63 @@
 <script>
     const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
     let state = JSON.parse(localStorage.getItem('tax_v11')) || { 
-        activeUFs: ["SP", "RJ"], configs: {}, audits: {}, tasks: {}, finance: {}, 
-        tickets: [] 
+        activeUFs: ["SP", "RJ"], configs: {}, audits: {}, tasks: {}, finance: {}, tickets: [] 
     };
     let currentUF = null;
 
     function init() { renderSidebar(); showGlobalDashboard(); }
 
-    function showTickets() { switchView('viewTickets'); currentUF = null; updateNavIcons('btnTickets'); renderTickets(); }
+    /* FUNÇÕES DE BANCO DE DADOS LOCAL (FOLDER SYNC) */
+    function exportToFolder() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", "database_tax.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        alert("Sistema exportado. Mova o arquivo 'database_tax.json' para sua pasta do banco de dados.");
+    }
 
+    function importFromFolder(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const imported = JSON.parse(e.target.result);
+                state = imported;
+                save();
+                location.reload();
+            } catch (err) { alert("Arquivo de banco de dados inválido."); }
+        };
+        reader.readAsText(file);
+    }
+
+    /* SISTEMA ORIGINAL MANTIDO */
+    function showTickets() { switchView('viewTickets'); currentUF = null; updateNavIcons('btnTickets'); renderTickets(); }
     function addTicket() {
-        const sub = document.getElementById('tSubject').value;
-        const entry = document.getElementById('tDate').value;
-        const risk = document.getElementById('tRisk').value;
-        if(!sub || !entry) return alert("Assunto e Data são obrigatórios.");
+        const sub = document.getElementById('tSubject').value; const entry = document.getElementById('tDate').value; const risk = document.getElementById('tRisk').value;
+        if(!sub || !entry) return alert("Erro.");
         state.tickets.push({ id: 'CH' + Math.floor(1000 + Math.random() * 9000), subject: sub, entry: entry, risk: risk, status: 'Aberto', closeDate: '' });
         document.getElementById('tSubject').value = ''; save(); renderTickets();
     }
-
     function renderTickets() {
         const body = document.getElementById('ticketBody'); body.innerHTML = '';
         state.tickets.slice().reverse().forEach((t, i) => {
             const idx = state.tickets.length - 1 - i; const isClosed = t.status === 'Concluído';
-            body.innerHTML += `<tr><td><small>${t.id}</small></td><td><strong>${t.subject}</strong></td><td>${t.entry.split('-').reverse().join('/')}</td><td><span class="risk-tag risk-${t.risk.toLowerCase()}">${t.risk}</span></td><td><span class="${isClosed ? 'status-closed' : 'status-open'}">${t.status}</span></td><td><input type="date" value="${t.closeDate}" onchange="closeTicket(${idx}, this.value)" ${isClosed?'disabled':''}></td><td><button onclick="deleteTicket(${idx})" style="border:none; background:none; cursor:pointer">🗑️</button></td></tr>`;
+            body.innerHTML += `<tr><td><small>${t.id}</small></td><td><strong>${t.subject}</strong></td><td>${t.entry.split('-').reverse().join('/')}</td><td><span class="risk-tag risk-${t.risk.toLowerCase()}">${t.risk}</span></td><td><span class="${isClosed ? 'status-closed' : 'status-open'}">${t.status}</span></td><td><input type="date" value="${t.closeDate}" onchange="closeTicket(${idx}, this.value)" ${isClosed?'disabled':''}></td><td><button onclick="deleteTicket(${idx})">🗑️</button></td></tr>`;
         });
     }
-
     function closeTicket(idx, date) { if(!date) return; state.tickets[idx].status = 'Concluído'; state.tickets[idx].closeDate = date; save(); renderTickets(); }
     function deleteTicket(idx) { state.tickets.splice(idx, 1); save(); renderTickets(); }
     function switchView(id) { document.querySelectorAll('.view-pane').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
     function updateNavIcons(activeId) { document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active')); document.getElementById(activeId).classList.add('active'); document.querySelectorAll('.uf-item').forEach(u => u.classList.remove('active')); }
-
+    
     function showGlobalDashboard() {
         switchView('viewGlobal'); currentUF = null; updateNavIcons('btnGlobal');
         const body = document.getElementById('globalBody'); body.innerHTML = '';
-        let total = 0, pending = 0, expired = 0, totalPaid = 0;
-        const today = new Date();
-
+        let total = 0, pending = 0, expired = 0, totalPaid = 0; const today = new Date();
         state.activeUFs.forEach(uf => {
             (state.audits[uf] || []).forEach(p => {
                 total++; const isDone = p.status === 'Concluído'; const limitDate = p.extDate ? new Date(p.extDate) : new Date(p.limit);
@@ -279,15 +266,8 @@
             });
             totalPaid += (state.finance[uf] || []).reduce((a, b) => a + b, 0);
         });
-
-        const tkTotal = state.tickets.length;
-        const tkOpen = state.tickets.filter(t => t.status !== 'Concluído').length;
-
-        document.getElementById('gTotal').innerText = total;
-        document.getElementById('gPending').innerText = pending;
-        document.getElementById('gExpired').innerText = expired;
-        document.getElementById('gTicketsTotal').innerText = tkTotal;
-        document.getElementById('gTicketsOpen').innerText = tkOpen;
+        document.getElementById('gTotal').innerText = total; document.getElementById('gPending').innerText = pending; document.getElementById('gExpired').innerText = expired;
+        document.getElementById('gTicketsTotal').innerText = state.tickets.length; document.getElementById('gTicketsOpen').innerText = state.tickets.filter(t => t.status !== 'Concluído').length;
         document.getElementById('gFinance').innerText = totalPaid.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
     }
 
@@ -295,68 +275,50 @@
         currentUF = uf; switchView('viewUF'); document.querySelectorAll('.btn-nav').forEach(b => b.classList.remove('active')); renderSidebar();
         document.getElementById('activeUFTitle').innerText = `Gestão UF: ${currentUF}`;
         const c = state.configs[currentUF] || {};
-        
-        // Atualiza Dashboard Principal da UF
-        document.getElementById('dashAliqGeral').innerText = (c.aliqGeral || 0) + '%';
-        document.getElementById('dashFecop').innerText = (c.fecop || 0) + '%';
-        document.getElementById('dashTelecom').innerText = (c.telecom || 0) + '%';
-        document.getElementById('dashCredito').innerText = c.credito || 'Não';
-        document.getElementById('dashPre').innerText = c.prePago || 'Não';
-        
-        // Atualiza Infos de Vencimento no Topo
-        document.getElementById('dashVencDia').innerText = c.diaVenc ? `Todo dia ${c.diaVenc}` : '--';
+        document.getElementById('dashAliqGeral').innerText = (c.aliqGeral || 0) + '%'; document.getElementById('dashFecop').innerText = (c.fecop || 0) + '%';
+        document.getElementById('dashTelecom').innerText = (c.telecom || 0) + '%'; document.getElementById('dashCredito').innerText = c.credito || 'Não';
+        document.getElementById('dashPre').innerText = c.prePago || 'Não'; document.getElementById('dashVencDia').innerText = c.diaVenc ? `Todo dia ${c.diaVenc}` : '--';
         document.getElementById('dashVencRegra').innerText = c.regraVenc || '--';
-        
         renderFinance(); renderMainChecklist();
     }
-
     function renderFinance() {
         const container = document.getElementById('financeMatrix'); container.innerHTML = '';
         if(!state.finance[currentUF]) state.finance[currentUF] = new Array(12).fill(0);
         months.forEach((m, i) => {
-            container.innerHTML += `<div style="background:#f8fafc; padding:8px; border-radius:6px; border:1px solid var(--border)">
-                <label style="font-size:0.6rem; font-weight:bold; color:var(--accent)">${m}</label>
-                <input type="number" value="${state.finance[currentUF][i]}" onchange="updateFinance(${i}, this.value)" style="border:none; background:transparent; font-weight:bold; width:100%">
-            </div>`;
+            container.innerHTML += `<div style="background:#f8fafc; padding:8px; border-radius:6px; border:1px solid var(--border)"><label style="font-size:0.6rem; font-weight:bold; color:var(--accent)">${m}</label><input type="number" value="${state.finance[currentUF][i]}" onchange="updateFinance(${i}, this.value)" style="border:none; background:transparent; font-weight:bold; width:100%"></div>`;
         });
     }
-
     function updateFinance(i, v) { state.finance[currentUF][i] = parseFloat(v) || 0; save(); }
     function addTask() { const inp = document.getElementById('newTaskInput'); if(!inp.value) return; if(!state.tasks[currentUF]) state.tasks[currentUF] = []; state.tasks[currentUF].push({text: inp.value, done: false}); inp.value=''; save(); renderMainChecklist(); }
     function renderMainChecklist() { const c = document.getElementById('mainChecklistDisplay'); c.innerHTML = ''; (state.tasks[currentUF]||[]).forEach((t, i) => { c.innerHTML += `<div style="background:white; padding:10px; border-radius:8px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;"><label style="display:flex; gap:8px; align-items:center; cursor:pointer; flex:1"><input type="checkbox" ${t.done?'checked':''} onchange="toggleTask(${i})"><span style="${t.done?'text-decoration:line-through; opacity:0.6':''}">${t.text}</span></label><button onclick="deleteTask(${i})" style="color:var(--danger); border:none; background:none; cursor:pointer">✕</button></div>`; }); }
     function showUFInbound() { switchView('viewInbound'); document.getElementById('fiscUFLabel').innerText = currentUF; renderFiscalizacoes(); }
     function showUFMain() { switchView('viewUF'); }
-    function renderFiscalizacoes() { const b = document.getElementById('fiscBody'); b.innerHTML = ''; (state.audits[currentUF]||[]).forEach((a, i) => { b.innerHTML += `<tr><td><strong>${a.name}</strong></td><td>${a.entry.split('-').reverse().join('/')}</td><td>${a.limit.split('-').reverse().join('/')}</td><td><input type="date" value="${a.extDate||''}" onchange="updateExtension(${i}, this.value)" style="width:auto"></td><td><select onchange="updateFStatus(${i}, this.value)"><option value="Em Andamento" ${a.status==='Em Andamento'?'selected':''}>Em Andamento</option><option value="Concluído" ${a.status==='Concluído'?'selected':''}>Concluído</option></select></td><td><button onclick="deleteFisc(${i})" style="border:none; background:none; cursor:pointer">🗑️</button></td></tr>`; }); }
-    function updateExtension(i, v) { state.audits[currentUF][i].extDate = v; save(); }
+    function renderFiscalizacoes() { 
+        const b = document.getElementById('fiscBody'); b.innerHTML = ''; 
+        (state.audits[currentUF]||[]).forEach((a, i) => { 
+            const linkBtn = a.link ? `<a href="${a.link}" target="_blank">📂</a>` : '--';
+            b.innerHTML += `<tr><td><strong>${a.name}</strong></td><td>${a.entry.split('-').reverse().join('/')}</td><td>${a.limit.split('-').reverse().join('/')}</td><td><select onchange="updateFStatus(${i}, this.value)"><option value="Em Andamento" ${a.status==='Em Andamento'?'selected':''}>Em Andamento</option><option value="Concluído" ${a.status==='Concluído'?'selected':''}>Concluído</option></select></td><td style="text-align:center">${linkBtn}</td><td><button onclick="deleteFisc(${i})">🗑️</button></td></tr>`; 
+        }); 
+    }
     function updateFStatus(i, s) { state.audits[currentUF][i].status = s; save(); renderFiscalizacoes(); }
-    function addFiscalizacao() { const n=document.getElementById('fName').value, e=document.getElementById('fIn').value, l=document.getElementById('fLimit').value, s=document.getElementById('fStatus').value; if(!n||!e||!l) return alert("Erro."); if(!state.audits[currentUF]) state.audits[currentUF]=[]; state.audits[currentUF].push({name:n, entry:e, limit:l, status:s, extDate:''}); save(); renderFiscalizacoes(); }
+    function addFiscalizacao() { 
+        const n=document.getElementById('fName').value, e=document.getElementById('fIn').value, l=document.getElementById('fLimit').value, s=document.getElementById('fStatus').value, lk=document.getElementById('fLink').value; 
+        if(!n||!e||!l) return alert("Erro."); if(!state.audits[currentUF]) state.audits[currentUF]=[]; 
+        state.audits[currentUF].push({name:n, entry:e, limit:l, status:s, extDate:'', link:lk}); 
+        document.getElementById('fName').value=''; document.getElementById('fLink').value=''; save(); renderFiscalizacoes(); 
+    }
     function renderSidebar() { const l = document.getElementById('sidebarList'); l.innerHTML = ''; state.activeUFs.sort().forEach(uf => { l.innerHTML += `<div class="uf-item ${currentUF===uf?'active':''}" onclick="selectUF('${uf}')"><span>${uf}</span></div>`; }); }
-    
     function openUFModal() { 
         const c = state.configs[currentUF] || {}; document.getElementById('labelUF').innerText = currentUF; 
-        document.getElementById('cfgAliqGeral').value = c.aliqGeral||""; 
-        document.getElementById('cfgFecop').value = c.fecop||""; 
-        document.getElementById('cfgTelecom').value = c.telecom||""; 
-        document.getElementById('cfgCredito').value = c.credito||"Não"; 
-        document.getElementById('cfgPrePago').value = c.prePago||"Não"; 
-        document.getElementById('cfgDiaVenc').value = c.diaVenc||""; 
-        document.getElementById('cfgRegraVenc').value = c.regraVenc||"Antecipa"; 
-        document.getElementById('modalUF').style.display = 'flex'; 
+        document.getElementById('cfgAliqGeral').value = c.aliqGeral||""; document.getElementById('cfgFecop').value = c.fecop||""; 
+        document.getElementById('cfgTelecom').value = c.telecom||""; document.getElementById('cfgCredito').value = c.credito||"Não"; 
+        document.getElementById('cfgPrePago').value = c.prePago||"Não"; document.getElementById('cfgDiaVenc').value = c.diaVenc||""; 
+        document.getElementById('cfgRegraVenc').value = c.regraVenc||"Antecipa"; document.getElementById('modalUF').style.display = 'flex'; 
     }
-
     function saveUFConfig() { 
-        state.configs[currentUF] = { 
-            aliqGeral: document.getElementById('cfgAliqGeral').value, 
-            fecop: document.getElementById('cfgFecop').value, 
-            telecom: document.getElementById('cfgTelecom').value, 
-            credito: document.getElementById('cfgCredito').value, 
-            prePago: document.getElementById('cfgPrePago').value,
-            diaVenc: document.getElementById('cfgDiaVenc').value,
-            regraVenc: document.getElementById('cfgRegraVenc').value
-        }; 
+        state.configs[currentUF] = { aliqGeral: document.getElementById('cfgAliqGeral').value, fecop: document.getElementById('cfgFecop').value, telecom: document.getElementById('cfgTelecom').value, credito: document.getElementById('cfgCredito').value, prePago: document.getElementById('cfgPrePago').value, diaVenc: document.getElementById('cfgDiaVenc').value, regraVenc: document.getElementById('cfgRegraVenc').value }; 
         save(); closeModal('modalUF'); selectUF(currentUF); 
     }
-
     function secureManageUFs() { const p = prompt("Código:"); if(p==='CONFIG') { const r = prompt("UFs:", state.activeUFs.join(", ")); if(r) { state.activeUFs = r.split(",").map(s => s.trim().toUpperCase()); save(); location.reload(); } } }
     function toggleTask(i) { state.tasks[currentUF][i].done = !state.tasks[currentUF][i].done; save(); renderMainChecklist(); }
     function deleteTask(i) { state.tasks[currentUF].splice(i, 1); save(); renderMainChecklist(); }
